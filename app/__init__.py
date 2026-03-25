@@ -26,5 +26,9 @@ def create_app(config_class=Config):
     @app.errorhandler(404)
     def not_found_error(error):
         return render_template('404.html'), 404
+    
+
+    with app.app_context():
+        db.create_all()
 
     return app
