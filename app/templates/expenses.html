@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Expenses</h1>
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <a href="{{ url_for('main.add_expense') }}" class="btn btn-primary">Add Expense</a>
+        <button class="btn btn-secondary" type="button" data-bs-toggle="collapse"
+            data-bs-target="#filterCollapse">Filter</button>
+    </div>
+</div>
+
+<div class="collapse mb-3" id="filterCollapse">
+    <div class="card card-body">
+        <form method="GET" action="{{ url_for('main.list_expenses') }}">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="category">Category</label>
+                    <select name="category" id="category" class="form-select">
+                        <option value="">All</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if request.args.get('category')|int==cat.id %}selected{% endif
+                            %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="start_date">Start Date</label>
+                    <input type="date" name="start_date" id="start_date" class="form-control"
+                        value="{{ request.args.get('start_date', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end_date">End Date</label>
+                    <input type="date" name="end_date" id="end_date" class="form-control"
+                        value="{{ request.args.get('end_date', '') }}">
+                </div>
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-secondary">Apply</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if expenses %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ expense.category.name }}</td>
+            <td>${{ "%.2f"|format(expense.amount) }}</td>
+            <td>{{ expense.description or '' }}</td>
+            <td>
+                <a href="{{ url_for('main.edit_expense', id=expense.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{{ url_for('main.delete_expense', id=expense.id) }}" class="btn btn-sm btn-danger"
+                    onclick="return confirm('Are you sure?')">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No expenses found.</p>
+{% endif %}
+{% endblock %}

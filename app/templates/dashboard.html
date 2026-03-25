@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Total Spent This Month</div>
+            <div class="card-body">
+                <h5 class="card-title">${{ "%.2f"|format(total_spent) }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Total Budget This Month</div>
+            <div class="card-body">
+                <h5 class="card-title">${{ "%.2f"|format(total_budget) }}</h5>
+                <p class="card-text">
+                    {% if total_budget > 0 %}
+                    Remaining: ${{ "%.2f"|format(total_budget - total_spent) }}
+                    {% else %}
+                    No budget set.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <h3>Recent Expenses</h3>
+        {% if recent_expenses %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in recent_expenses %}
+                <tr>
+                    <td>{{ expense.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ expense.category.name }}</td>
+                    <td>${{ "%.2f"|format(expense.amount) }}</td>
+                    <td>{{ expense.description or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No expenses yet. <a href="{{ url_for('main.add_expense') }}">Add one now</a>.</p>
+        {% endif %}
+        <a href="{{ url_for('main.list_expenses') }}" class="btn btn-secondary">View All Expenses</a>
+    </div>
+</div>
+{% endblock %}

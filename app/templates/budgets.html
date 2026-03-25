@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Budgets</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Set/Update Budget</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('budget.manage_budgets') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.month.label(class="form-label") }}
+                        {{ form.month(class="form-control") }}
+                        {% for error in form.month.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.year.label(class="form-label") }}
+                        {{ form.year(class="form-control") }}
+                        {% for error in form.year.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-select") }}
+                        {% for error in form.category.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.amount_limit.label(class="form-label") }}
+                        {{ form.amount_limit(class="form-control") }}
+                        {% for error in form.amount_limit.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {{ form.submit(class="btn btn-primary") }}
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <h3>Current Budgets</h3>
+        {% if budgets_data %}
+        <div class="list-group">
+            {% for item in budgets_data %}
+            {% set percent = item.percent|float %}
+            {% set width = percent if percent <= 100 else 100 %} <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ item.budget.category.name }} ({{ item.budget.month }}/{{ item.budget.year }})
+                    </h5>
+                    <small>Budget: ${{ "%.2f"|format(item.budget.amount_limit) }}</small>
+                </div>
+                <p class="mb-1">Spent: ${{ "%.2f"|format(item.spent) }} | Remaining: ${{ "%.2f"|format(item.remaining)
+                    }}</p>
+                <div class="progress">
+                    <div class="progress-bar {% if percent > 100 %}bg-danger{% elif percent > 80 %}bg-warning{% else %}bg-success{% endif %}"
+                        role="progressbar" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ "%.0f"|format(percent) }}%
+                    </div>
+                </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No budgets set yet. Use the form to create one.</p>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
+
+<!-- style="width: {{ width }}%;" -->

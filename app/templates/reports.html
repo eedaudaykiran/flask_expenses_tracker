@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Reports</h1>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label for="monthSelect">Month</label>
+        <select id="monthSelect" class="form-select">
+            {% for m in range(1,13) %}
+            <option value="{{ m }}" {% if m==now.month %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="yearSelect">Year</label>
+        <select id="yearSelect" class="form-select">
+            {% for y in range(2020, 2030) %}
+            <option value="{{ y }}" {% if y==now.year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4 align-self-end">
+        <button id="refreshBtn" class="btn btn-primary">Refresh</button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <canvas id="pieChart" width="400" height="400"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="lineChart" width="400" height="400"></canvas>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let pieChart, lineChart;
+
+    function fetchData(month, year) {
+        fetch(`/api/chart-data?month=${month}&year=${year}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update pie chart
+                if (pieChart) pieChart.destroy();
+                const pieCtx = document.getElementById('pieChart').getContext('2d');
+                pieChart = new Chart(pieCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.pie_labels,
+                        datasets: [{
+                            data: data.pie_values,
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Spending by Category' }
+                        }
+                    }
+                });
+
+                // Update line chart
+                if (lineChart) lineChart.destroy();
+                const lineCtx = document.getElementById('lineChart').getContext('2d');
+                lineChart = new Chart(lineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: data.line_labels,
+                        datasets: [{
+                            label: 'Daily Spending',
+                            data: data.line_values,
+                            borderColor: '#36A2EB',
+                            fill: false,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: 'Daily Spending Trend' }
+                        }
+                    }
+                });
+            });
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        const month = document.getElementById('monthSelect').value;
+        const year = document.getElementById('yearSelect').value;
+        fetchData(month, year);
+    });
+
+    // Initial load
+    const now = new Date();
+    fetchData(now.getMonth() + 1, now.getFullYear());
+</script>
+{% endblock %}
+{% endblock %}
